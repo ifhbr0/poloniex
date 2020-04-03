@@ -364,6 +364,30 @@ func (p *Poloniex) Buy(market string, price, amount float64) (buy Buy, err error
 	return
 }
 
+func (p *Poloniex) IOCBuy(market string, price, amount float64) (buy Buy, err error) {
+	parameters := map[string]string{
+		"currencyPair":      strings.ToUpper(market),
+		"rate":              strconv.FormatFloat(float64(price), 'f', 8, 64),
+		"amount":            strconv.FormatFloat(float64(amount), 'f', 8, 64),
+		"immediateOrCancel": "1",
+	}
+
+	respch := make(chan []byte)
+	errch := make(chan error)
+
+	go p.tradingRequest("buy", parameters, respch, errch)
+
+	resp := <-respch
+	err = <-errch
+
+	if err != nil {
+		return
+	}
+
+	err = json.Unmarshal(resp, &buy)
+	return
+}
+
 type Sell Buy
 
 func (p *Poloniex) Sell(market string, price, amount float64) (sell Sell, err error) {
