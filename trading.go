@@ -412,3 +412,32 @@ func (p *Poloniex) Sell(market string, price, amount float64) (sell Sell, err er
 	err = json.Unmarshal(resp, &sell)
 	return
 }
+
+type Withdraw struct {
+	Response         string `json:"response"`
+	Email2FA         bool   `json:"email2FA"`
+	WithdrawalNumber int    `json:"withdrawalNumber"`
+}
+
+func (p *Poloniex) Withdraw(currency string, address string, amount float64) (withdraw Withdraw, err error) {
+	parameters := map[string]string{
+		"currency": strings.ToUpper(currency),
+		"amount":   strconv.FormatFloat(float64(amount), 'f', 8, 64),
+		"address":  address,
+	}
+
+	respch := make(chan []byte)
+	errch := make(chan error)
+
+	go p.tradingRequest("withdraw", parameters, respch, errch)
+
+	resp := <-respch
+	err = <-errch
+
+	if err != nil {
+		return
+	}
+	//log.Println(string(resp))
+	err = json.Unmarshal(resp, &withdraw)
+	return
+}
