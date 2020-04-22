@@ -225,14 +225,18 @@ func (ws *WSClient) wsHandler() error {
 // Convert ticker update arguments and fill wsticker.
 func convertArgsToTicker(args []interface{}) (wsticker WSTicker, err error) {
 	wsticker.Symbol = channelsByID[int(args[0].(float64))]
-	wsticker.Last, err = strconv.ParseFloat(args[1].(string), 64)
-	if err != nil {
-		err = Error(WSTickerError, "Last")
-		return
-	}
+
 	wsticker.LowestAsk, err = strconv.ParseFloat(args[2].(string), 64)
 	if err != nil {
 		err = Error(WSTickerError, "LowestAsk")
+		return
+	}
+
+	return
+
+	wsticker.Last, err = strconv.ParseFloat(args[1].(string), 64)
+	if err != nil {
+		err = Error(WSTickerError, "Last")
 		return
 	}
 	wsticker.HighestBid, err = strconv.ParseFloat(args[3].(string), 64)
